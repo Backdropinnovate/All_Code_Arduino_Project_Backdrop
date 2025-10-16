@@ -1,0 +1,101 @@
+//NRF24L01 Remote final
+
+#include <SPI.h>
+#include <nRF24L01.h>
+#include <RF24.h>
+#include <LiquidCrystal_I2C.h>
+
+RF24 radio(7, 8); // CE, CSN
+const byte address[6] = "00001";
+
+LiquidCrystal_I2C lcd(0x27, 20, 4);
+
+struct sensor
+{
+  int moist;
+  int N;
+  int P;
+  int K;
+  float soilTemp;
+  float envrTemp;
+  float pressure;
+  float altitute;
+  byte  sensorNum;
+};
+sensor sensorData;
+
+void setup() {
+  Serial.begin(9600);
+  
+  lcd.init();
+  lcd.backlight();
+  lcd.clear();
+  
+  radio.begin();
+  radio.openReadingPipe(0, address);
+  radio.setPALevel(RF24_PA_MIN);
+}
+
+
+void loop(){
+  delay(700);
+  lcd.clear();
+    radio.startListening();
+  //  while (!radio.available()){
+    radio.read(&sensorData, sizeof(sensorData)); 
+    Serial.print("Moist= ");
+    Serial.print(sensorData.moist);
+    lcd.setCursor(0, 3);
+    lcd.print("SM:");
+    lcd.print(sensorData.moist);
+    lcd.print("%");
+  
+    Serial.print(" N= ");
+    Serial.print(sensorData.N);
+    lcd.setCursor(0, 0);
+    lcd.print("N:");
+    lcd.print(sensorData.N);
+    lcd.print("mg/kg");
+  
+    Serial.print(" P= ");
+    Serial.print(sensorData.P);
+    lcd.setCursor(0, 1);
+    lcd.print("P:");
+    lcd.print(sensorData.P);
+    lcd.print("mg/kg");
+  
+    Serial.print(" K= ");
+    Serial.print(sensorData.K);
+    lcd.setCursor(0, 2);
+    lcd.print("K:");
+    lcd.print(sensorData.K);
+    lcd.print("mg/kg");
+  
+    Serial.print(" sTemp= ");
+    Serial.print(sensorData.soilTemp);
+    lcd.setCursor(10, 0);
+    lcd.print("ST:");
+    lcd.print(sensorData.soilTemp);
+    lcd.print("c");
+  
+    Serial.print(" ETemp= ");
+    Serial.print(sensorData.envrTemp);
+    lcd.setCursor(10, 1);
+    lcd.print("AT:");
+    lcd.print(sensorData.envrTemp);
+    lcd.print("c");
+      
+    Serial.print(" Prsr= ");
+    Serial.print(sensorData.pressure);
+    lcd.setCursor(10, 2);
+    lcd.print("AP:");
+    lcd.print(sensorData.pressure/1000);
+    lcd.print("%");
+
+    Serial.print(" alt= ");
+    Serial.println(sensorData.altitute);
+    lcd.setCursor(10, 3);
+    lcd.print("AL:");
+    lcd.print(sensorData.altitute);
+    
+}
